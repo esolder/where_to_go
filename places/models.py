@@ -1,4 +1,6 @@
 from django.db import models
+from django.db.models.signals import pre_delete
+from django.dispatch import receiver
 
 
 class Place(models.Model):
@@ -14,3 +16,23 @@ class Place(models.Model):
 
     def __str__(self):
         return self.title  
+
+
+class Image(models.Model):
+    place = models.ForeignKey(Place,
+                              on_delete=models.CASCADE,
+                              related_name='images',
+                              verbose_name='Место')
+    image = models.ImageField('Изображение')
+
+    class Meta:
+        verbose_name = 'Изображение'
+        verbose_name_plural = 'Изображения'
+
+    def __str__(self):
+        return f'{self.id} {self.place.title}'
+
+
+@receiver(pre_delete, sender=Image)
+def delete_image(sender, instance, **kwargs):
+    instance.image.delete()
